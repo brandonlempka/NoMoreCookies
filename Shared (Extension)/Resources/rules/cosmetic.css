@@ -349,7 +349,9 @@ html:not(.nmc-off):not(.nmc-off-login) :is(
     [class*="unauth-wall" i],     [data-test-id="unauth-wall"],
     [class*="gated-content" i],   [class*="content-gate" i],
     .login-required-modal,
-    .authwall-join-form
+    .authwall-join-form,
+    /* Google Identity Services' auto-shown "One Tap" sign-in card. */
+    #credential_picker_container
 ) {
     display: none !important;
 }

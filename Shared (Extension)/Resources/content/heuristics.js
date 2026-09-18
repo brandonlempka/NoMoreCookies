@@ -189,6 +189,26 @@
             return null;
         }
 
+        /* Google's One Tap card carries no readable text or name hint (its
+           content lives in a cross-origin iframe), so it has to be caught
+           by id before the generic, text-driven scoring below — and ahead
+           of the visibility check, since the static cosmetic.css rule
+           already display:none's it by the time this runs, which would
+           otherwise make it invisible for evaluate()'s own purposes and
+           leave it out of the "we blocked this" count. */
+        try {
+            if (el.matches(D.GOOGLE_ONETAP_SEL)) {
+                /* Whichever of the two we were handed — the outer shell or
+                   the iframe itself — hide the shell, so an iframe match
+                   never leaves an empty container box sitting in the
+                   corner. */
+                var oneTapTarget = el.closest("#credential_picker_container") || el.parentElement || el;
+                return { category: "login", score: 10, reason: "google one tap", target: oneTapTarget };
+            }
+        } catch (e) {
+            /* ignore */
+        }
+
         var cs;
         try {
             cs = getComputedStyle(el);

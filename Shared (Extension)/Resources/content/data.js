@@ -404,6 +404,19 @@ window.NMC_DATA = (function () {
     var CMP_FRAME_RE =
         /(cookielaw|onetrust|cookiebot|quantcast|consensu|privacy-mgmt|sp-prod|trustarc|usercentrics|osano|didomi|privacy-center|termly|iubenda|cookie-script|axept|consentmanager|evidon|fundingchoices|cookieyes|cookiehub|ketchcdn|sirdata|sddan)\./i;
 
+    /* Google Identity Services' auto-shown "One Tap" sign-in card. Its
+       whole UI lives inside a Google-hosted, cross-origin iframe, so there
+       is no text or button on the parent page for the generic heuristics
+       to key off — the container's own id is the only signal we get.
+       Checked against the current accounts.google.com/gsi/client bundle:
+       it builds `<div id="credential_picker_container">` on document.body
+       holding `<iframe id="credential_picker_iframe" title="Sign in with
+       Google Dialog">`. This only matches the unsolicited One Tap prompt,
+       never a "Sign in with Google" button the site placed deliberately,
+       which is a separate iframe with neither id. */
+    var GOOGLE_ONETAP_SEL =
+        '#credential_picker_container, iframe#credential_picker_iframe, iframe[title="Sign in with Google Dialog" i]';
+
     return {
         CMPS: CMPS,
         REJECT_RE: REJECT_RE,
@@ -420,6 +433,7 @@ window.NMC_DATA = (function () {
         PAYWALL_RE: PAYWALL_RE,
         CMP_FRAME_RE: CMP_FRAME_RE,
         VIDEO_FLOAT_NAME_RE: VIDEO_FLOAT_NAME_RE,
+        GOOGLE_ONETAP_SEL: GOOGLE_ONETAP_SEL,
         CATEGORIES: ["cookie", "news", "app", "adblock", "video", "ads", "login"]
     };
 })();
