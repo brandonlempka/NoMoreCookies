@@ -107,12 +107,14 @@
 			membershipExceptions = (
 				Resources/_locales,
 				Resources/background.js,
-				Resources/content.js,
+				Resources/content,
 				Resources/images,
 				Resources/manifest.json,
 				Resources/popup.css,
 				Resources/popup.html,
 				Resources/popup.js,
+				Resources/rules,
+				Resources/shared,
 				SafariWebExtensionHandler.swift,
 			);
 			target = A53D0723305B72D500BA95DD /* NoMoreCookies Extension (iOS) */;
@@ -122,12 +124,14 @@
 			membershipExceptions = (
 				Resources/_locales,
 				Resources/background.js,
-				Resources/content.js,
+				Resources/content,
 				Resources/images,
 				Resources/manifest.json,
 				Resources/popup.css,
 				Resources/popup.html,
 				Resources/popup.js,
+				Resources/rules,
+				Resources/shared,
 				SafariWebExtensionHandler.swift,
 			);
 			target = A53D072D305B72D500BA95DD /* NoMoreCookies Extension (macOS) */;
@@ -152,7 +156,10 @@
 			);
 			explicitFolders = (
 				Resources/_locales,
+				Resources/content,
 				Resources/images,
+				Resources/rules,
+				Resources/shared,
 			);
 			path = "Shared (Extension)";
 			sourceTree = "<group>";

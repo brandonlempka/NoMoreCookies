@@ -1,11 +1,149 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>NoMoreCookies</title>
     <link rel="stylesheet" href="popup.css">
     <script type="module" src="popup.js"></script>
 </head>
 <body>
-    <strong>Hello World!</strong>
+    <header class="head">
+        <div class="brand">
+            <span class="mark" aria-hidden="true">🍪</span>
+            <div>
+                <h1>NoMoreCookies</h1>
+                <p class="tag" id="tagline">Watching this page</p>
+            </div>
+        </div>
+        <label class="switch big">
+            <input type="checkbox" id="enabled" checked>
+            <span class="track" aria-hidden="true"></span>
+            <span class="sr">Extension enabled</span>
+        </label>
+    </header>
+
+    <section class="card site" id="site-card">
+        <div class="site-row">
+            <div class="site-info">
+                <span class="site-host" id="site-host">this site</span>
+                <span class="site-state" id="site-state">Protected</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="site-toggle" checked>
+                <span class="track" aria-hidden="true"></span>
+                <span class="sr">Enabled on this site</span>
+            </label>
+        </div>
+    </section>
+
+    <section class="card" id="blocked-card">
+        <button class="disclosure" id="blocked-head" aria-expanded="false" aria-controls="blocked-list">
+            <span class="count-dot" id="count">0</span>
+            <span class="disclosure-label" id="blocked-label">Nothing hidden yet</span>
+            <span class="chev" aria-hidden="true">›</span>
+        </button>
+        <ul class="hidden-list" id="blocked-list" hidden></ul>
+        <button class="linkish" id="restore-all" hidden>Show everything again</button>
+    </section>
+
+    <section class="card">
+        <h2>Hide</h2>
+        <div id="categories"></div>
+    </section>
+
+    <section class="card">
+        <h2>Behaviour</h2>
+
+        <label class="row">
+            <span class="row-text">
+                Click “reject all”
+                <small>Answers cookie banners instead of only hiding them</small>
+            </span>
+            <span class="switch">
+                <input type="checkbox" id="autoReject">
+                <span class="track" aria-hidden="true"></span>
+            </span>
+        </label>
+
+        <label class="row">
+            <span class="row-text">
+                Restore scrolling
+                <small>Undoes the scroll lock a modal leaves behind</small>
+            </span>
+            <span class="switch">
+                <input type="checkbox" id="unlockScroll">
+                <span class="track" aria-hidden="true"></span>
+            </span>
+        </label>
+
+        <label class="row">
+            <span class="row-text">
+                Aggressive mode
+                <small>Also hides unlabelled overlays. More reach, more misfires</small>
+            </span>
+            <span class="switch">
+                <input type="checkbox" id="aggressive">
+                <span class="track" aria-hidden="true"></span>
+            </span>
+        </label>
+    </section>
+
+    <section class="card">
+        <h2>Block at the network level</h2>
+
+        <label class="row">
+            <span class="row-text">
+                Consent platforms
+                <small>OneTrust, Cookiebot, Didomi and friends never load</small>
+            </span>
+            <span class="switch">
+                <input type="checkbox" id="blockConsentScripts">
+                <span class="track" aria-hidden="true"></span>
+            </span>
+        </label>
+
+        <label class="row">
+            <span class="row-text">
+                Pop-up &amp; push services
+                <small>Privy, OptinMonster, OneSignal, smart-banner SDKs</small>
+            </span>
+            <span class="switch">
+                <input type="checkbox" id="blockPopupScripts">
+                <span class="track" aria-hidden="true"></span>
+            </span>
+        </label>
+
+        <label class="row">
+            <span class="row-text">
+                Ad networks
+                <small>Ad servers, exchanges, video ad tech and native-ad widgets</small>
+            </span>
+            <span class="switch">
+                <input type="checkbox" id="blockAdNetworks">
+                <span class="track" aria-hidden="true"></span>
+            </span>
+        </label>
+
+        <label class="row">
+            <span class="row-text">
+                Analytics &amp; trackers
+                <small>Telemetry, session replay, social pixels. Can break tag-managed features</small>
+            </span>
+            <span class="switch">
+                <input type="checkbox" id="blockTrackers">
+                <span class="track" aria-hidden="true"></span>
+            </span>
+        </label>
+
+        <p class="hint" id="reload-hint" hidden>
+            Network changes apply on the next load.
+            <button class="linkish inline" id="reload">Reload page</button>
+        </p>
+    </section>
+
+    <footer class="foot">
+        <span id="total">0 interruptions hidden on this page</span>
+    </footer>
 </body>
 </html>

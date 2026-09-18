@@ -4,7 +4,7 @@
         "description": "The display name for the extension."
     },
     "extension_description": {
-        "message": "This is NoMoreCookies. You should tell us what your extension does here.",
+        "message": "Automatically dismisses cookie banners, newsletter pop-ups, app-install nags, anti-adblock walls and floating video players.",
         "description": "Description of what the extension does."
     }
 }

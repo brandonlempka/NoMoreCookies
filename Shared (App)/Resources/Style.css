@@ -1,13 +1,20 @@
-* {
-    -webkit-user-select: none;
-    -webkit-user-drag: none;
-    cursor: default;
-}
-
 :root {
     color-scheme: light dark;
+    --text: #1b1c1e;
+    --muted: #6d7075;
+    --line: rgba(0, 0, 0, 0.1);
+    --note: rgba(47, 111, 79, 0.1);
+    --accent: #2f6f4f;
+}
 
-    --spacing: 20px;
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text: #f2f2f3;
+        --muted: #9a9da3;
+        --line: rgba(255, 255, 255, 0.14);
+        --note: rgba(75, 189, 132, 0.14);
+        --accent: #4bbd84;
+    }
 }
 
 html {
@@ -15,47 +22,85 @@ html {
 }
 
 body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
+    margin: 0 auto;
+    padding: 28px 24px;
+    max-width: 480px;
 
-    gap: var(--spacing);
-    margin: 0 calc(var(--spacing) * 2);
-    height: 100%;
-
-    font: -apple-system-short-body;
+    font: 400 14px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    color: var(--text);
     text-align: center;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
-body:not(.platform-mac, .platform-ios) :is(.platform-mac, .platform-ios) {
-    display: none;
+img {
+    border-radius: 22%;
+    margin-bottom: 14px;
 }
 
-body.platform-ios .platform-mac {
-    display: none;
+h1 {
+    margin: 0 0 6px;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
 }
 
-body.platform-mac .platform-ios {
-    display: none;
+h2 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
 }
 
-body.platform-ios .platform-mac {
-    display: none;
-}
-
-body:not(.state-on, .state-off) :is(.state-on, .state-off) {
-    display: none;
-}
-
-body.state-on :is(.state-off, .state-unknown) {
-    display: none;
-}
-
-body.state-off :is(.state-on, .state-unknown) {
-    display: none;
+.lede {
+    margin: 0 0 20px;
+    color: var(--muted);
 }
 
 button {
-    font-size: 1em;
+    margin-top: 12px;
+    padding: 7px 14px;
+    font: inherit;
+}
+
+.steps {
+    margin: 22px 0 0;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    text-align: left;
+}
+
+.steps ol {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.steps li {
+    margin-bottom: 6px;
+}
+
+.note {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: var(--note);
+    text-align: left;
+    font-size: 13px;
+}
+
+.note strong:first-child {
+    color: var(--accent);
+}
+
+/* The controller puts platform-* and state-* on <body>; everything that
+   does not match the running platform stays hidden. */
+body:not(.platform-mac) .platform-mac,
+body:not(.platform-ios) .platform-ios,
+body:not(.state-on) .state-on,
+body:not(.state-off) .state-off,
+body:not(.state-unknown) .state-unknown {
+    display: none;
 }

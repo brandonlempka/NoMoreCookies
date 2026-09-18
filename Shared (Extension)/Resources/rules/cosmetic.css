@@ -1,0 +1,379 @@
+/*
+ * NoMoreCookies — static cosmetic rules.
+ *
+ * Injected at document_start so known offenders never paint at all.
+ *
+ * Everything is gated behind classes that JS puts on <html> *only when a
+ * category is switched off*, so the default (no classes, storage not read
+ * yet) is "all rules active". That ordering matters: a banner must never
+ * get a frame of visibility while we wait on async storage.
+ *
+ *   .nmc-off          extension off, or this site is allowlisted
+ *   .nmc-off-cookie   cookie / consent banners
+ *   .nmc-off-news     newsletter + email-capture pop-ups
+ *   .nmc-off-app      "open in app" / smart banners
+ *   .nmc-off-adblock  anti-adblock walls
+ *   .nmc-off-video    floating / picture-in-picture video players
+ *   .nmc-off-ads      sticky ad rails and interstitials
+ *   .nmc-off-login    sign-in / registration walls
+ *   .nmc-unlocked     JS hid a modal, so give scrolling back
+ */
+
+/* ---------------------------------------------------------------- *
+ * What the heuristics engine marks at runtime
+ * ---------------------------------------------------------------- */
+
+html:not(.nmc-off) [data-nmc-hidden] {
+    display: none !important;
+}
+
+html:not(.nmc-off) [data-nmc-hidden]::backdrop {
+    display: none !important;
+    background: transparent !important;
+}
+
+/* Elements we only neutralise rather than remove: a transparent click
+   blocker sitting over the page. Keeping it in the layout avoids the
+   reflow that deleting it would cause. */
+html:not(.nmc-off) [data-nmc-passthrough] {
+    pointer-events: none !important;
+    opacity: 0 !important;
+}
+
+/* ---------------------------------------------------------------- *
+ * Scroll unlock
+ * ---------------------------------------------------------------- */
+
+html.nmc-unlocked,
+html.nmc-unlocked body {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: auto !important;
+    position: static !important;
+    height: auto !important;
+    max-height: none !important;
+    inset: auto !important;
+    touch-action: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    filter: none !important;
+    /* Sites pad the body to compensate for the scrollbar they just hid. */
+    padding-right: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* ---------------------------------------------------------------- *
+ * Cookie / consent management platforms
+ * ---------------------------------------------------------------- */
+
+html:not(.nmc-off):not(.nmc-off-cookie) :is(
+    /* OneTrust */
+    #onetrust-consent-sdk,
+    #onetrust-banner-sdk,
+    #onetrust-pc-sdk,
+    .onetrust-pc-dark-filter,
+    .ot-sdk-row #onetrust-policy,
+    /* Cookiebot */
+    #CybotCookiebotDialog,
+    #CybotCookiebotDialogBodyUnderlay,
+    #CookiebotWidget,
+    /* Quantcast Choice */
+    .qc-cmp2-container,
+    .qc-cmp-cleanslate,
+    .qc-cmp2-persistent-link,
+    /* Didomi */
+    #didomi-host,
+    #didomi-popup,
+    .didomi-popup-open,
+    .didomi-notice-banner,
+    /* TrustArc */
+    #truste-consent-track,
+    .truste_overlay,
+    .truste_box_overlay,
+    #consent_blackbar,
+    /* Usercentrics */
+    #usercentrics-root,
+    #usercentrics-cmp-ui,
+    [id^="usercentrics-"],
+    /* Osano */
+    .osano-cm-window,
+    .osano-cm-dialog,
+    .osano-cm-widget,
+    /* Sourcepoint */
+    [id^="sp_message_container"],
+    [class^="sp_veil"],
+    .sp-message-open,
+    /* CookieYes */
+    .cky-consent-container,
+    .cky-modal,
+    .cky-overlay,
+    .cky-btn-revisit-wrapper,
+    /* Complianz */
+    #cmplz-cookiebanner-container,
+    .cmplz-cookiebanner,
+    #cmplz-manage-consent,
+    /* Termly */
+    #termly-code-snippet-support,
+    .t-consentPrompt,
+    /* Borlabs */
+    #BorlabsCookieBox,
+    #BorlabsCookieBoxWrap,
+    /* Iubenda */
+    #iubenda-cs-banner,
+    .iubenda-cs-container,
+    .iub-cons-overlay,
+    /* Klaro */
+    .klaro .cookie-notice,
+    .klaro .cookie-modal,
+    /* Cookie-Script */
+    #cookiescript_injected,
+    #cookiescript_injected_wrapper,
+    #cookiescript_badge,
+    /* Ketch */
+    #lanyard_root,
+    #ketch-consent-banner,
+    /* Axeptio */
+    #axeptio_overlay,
+    #axeptio_main_button,
+    .axeptio_widget,
+    /* Consentmanager */
+    #cmpbox,
+    #cmpbox2,
+    #cmpwrapper,
+    /* Evidon */
+    #_evidon_banner,
+    #_evidon-barrier-wrapper,
+    #_evidon_bar,
+    /* Google Funding Choices */
+    .fc-consent-root,
+    .fc-dialog-container,
+    .fc-dialog-overlay,
+    /* tarteaucitron */
+    #tarteaucitronRoot,
+    #tarteaucitronAlertBig,
+    /* CookieHub */
+    #ch2,
+    .ch2-dialog,
+    /* WordPress plugins */
+    #moove_gdpr_cookie_info_bar,
+    #cookie-law-info-bar,
+    #cookie-notice,
+    #catapult-cookie-bar,
+    .gdpr-privacy-bar,
+    .cc-window.cc-banner,
+    .cc-window.cc-floating,
+    .cookie-consent-banner,
+    /* Shopify / generic app banners */
+    .cookie-banner,
+    #cookie-banner,
+    #cookieConsent,
+    #cookie-consent,
+    #cookie-policy,
+    #gdpr-consent-banner,
+    #gdpr-banner,
+    #gdpr-cookie-message,
+    .gdpr-consent-banner,
+    /* CookieConsent by Orestbida */
+    #cc-main,
+    #cm.cc,
+    .cc_dialog,
+    /* Quantcast/IAB generic */
+    [class*="consent-banner" i],
+    [id*="consent-banner" i],
+    [class*="cookie-consent" i],
+    [id*="cookie-consent" i]
+) {
+    display: none !important;
+}
+
+/* Several CMPs lock scrolling with a class on <html> or <body>. */
+html:not(.nmc-off):not(.nmc-off-cookie):is(
+    .didomi-popup-open,
+    .cmplz-blocked-content-scroll,
+    .ot-overflow-hidden,
+    .cookiebanner-open,
+    .osano-cm-dialog-open
+),
+html:not(.nmc-off):not(.nmc-off-cookie) body:is(
+    .didomi-popup-open,
+    .ot-overflow-hidden,
+    .cky-modal-open,
+    .osano-cm-dialog-open,
+    .cmplz-blocked-content-scroll
+) {
+    overflow: auto !important;
+    position: static !important;
+}
+
+/* ---------------------------------------------------------------- *
+ * Newsletter / email-capture pop-ups
+ * ---------------------------------------------------------------- */
+
+html:not(.nmc-off):not(.nmc-off-news) :is(
+    /* Privy */
+    .privy-popup, [id^="privy-"], .privy-modal, #privy-container,
+    /* OptinMonster */
+    .om-holder, .optin-monster-overlay, [id^="om-"][class*="optin"],
+    html > .om-element-wrapper,
+    /* Sumo */
+    #sumome-smartbar-popup, .sumome-react-wrapper, #sumo-app,
+    /* Mailmunch */
+    .mailmunch-forms-widget, [id^="mailmunch-"],
+    /* Justuno */
+    .juapp-container, [id^="juapp"], .ju-overlay,
+    /* Wisepops */
+    .wisepops-popup, [id^="wisepops"], .wisp-popup,
+    /* Poptin */
+    .poptin-popup, [id^="poptin-"],
+    /* Sleeknote */
+    .sleeknote-overlay, [id^="sleeknote"],
+    /* OptiMonk */
+    .optimonk-holder, [id^="optimonk"],
+    /* GetSiteControl */
+    .gsc-widget, [id^="gsc-"],
+    /* Bounce Exchange */
+    [id^="bx-campaign"], .bx-slab, [class^="bx-wrap"],
+    /* Klaviyo */
+    .klaviyo-form, .needsclick[data-testid="form-row"], .kl-private-reset-css-Xuajs1,
+    /* Attentive */
+    #attentive_overlay, #attentive_creative,
+    /* Postscript */
+    #postscript-popup, [id^="ps-widget"],
+    /* Hello Bar / ConvertBox / Wheelio */
+    .hellobar-container, #hellobar-bar, .cb-overlay, [id^="convertbox"], #wheelio-app,
+    /* MailerLite / Mailchimp / ActiveCampaign */
+    .ml-form-embedPopup, .ml-subscribe-form .ml-form-align-center,
+    #mc_embed_signup_modal, .mc-modal, .mc-banner,
+    /* Generic, name-based */
+    [class*="newsletter-popup" i], [id*="newsletter-popup" i],
+    [class*="newsletter-modal" i], [id*="newsletter-modal" i],
+    [class*="email-popup" i],      [id*="email-popup" i],
+    [class*="subscribe-popup" i],  [id*="subscribe-popup" i],
+    [class*="signup-modal" i],     [id*="signup-modal" i],
+    [class*="exit-intent" i],      [id*="exit-intent" i],
+    [class*="exit-popup" i],       [id*="exit-popup" i]
+) {
+    display: none !important;
+}
+
+/* ---------------------------------------------------------------- *
+ * "Get our app" / smart banners
+ * ---------------------------------------------------------------- */
+
+html:not(.nmc-off):not(.nmc-off-app) :is(
+    .smartbanner, .smartbanner-show, #smartbanner,
+    .branch-journeys-top, .branch-banner-is-active, #branch-banner,
+    #branch-banner-iframe, .branch-animation,
+    .appsflyer-smart-banner, #afSmartBannerContainer,
+    .adjust-smart-banner,
+    [class*="app-banner" i], [id*="app-banner" i],
+    [class*="appbanner" i],  [id*="appbanner" i],
+    [class*="smart-banner" i], [id*="smart-banner" i],
+    [class*="open-in-app" i],  [id*="open-in-app" i],
+    [class*="download-app" i], [id*="download-app" i],
+    [class*="get-the-app" i],  [id*="get-the-app" i],
+    [class*="app-install" i],  [id*="app-install" i],
+    [class*="app-interstitial" i]
+) {
+    display: none !important;
+}
+
+/* Smart banners shove the page down with a body offset. */
+html:not(.nmc-off):not(.nmc-off-app) body:is(
+    .branch-banner-is-active, .smartbanner-show, .with-smartbanner
+) {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    top: 0 !important;
+}
+
+/* ---------------------------------------------------------------- *
+ * Anti-adblock walls
+ * ---------------------------------------------------------------- */
+
+html:not(.nmc-off):not(.nmc-off-adblock) :is(
+    [class*="adblock-detect" i], [id*="adblock-detect" i],
+    [class*="adblock-modal" i],  [id*="adblock-modal" i],
+    [class*="adblock-overlay" i],[id*="adblock-overlay" i],
+    [class*="adblock-notice" i], [id*="adblock-notice" i],
+    [class*="adblock-warning" i],[id*="adblock-warning" i],
+    [class*="anti-adblock" i],   [id*="anti-adblock" i],
+    [class*="adblocker-message" i],
+    #adblock-blocker, #ab-message, .ab-detected, .adb-overlay,
+    .blockadblock, #blockblock, .bab-overlay
+) {
+    display: none !important;
+}
+
+/* ---------------------------------------------------------------- *
+ * Floating / picture-in-picture video players
+ * ---------------------------------------------------------------- */
+
+html:not(.nmc-off):not(.nmc-off-video) :is(
+    [class*="floating-player" i], [id*="floating-player" i],
+    [class*="floating-video" i],  [id*="floating-video" i],
+    [class*="sticky-player" i],   [id*="sticky-player" i],
+    [class*="sticky-video" i],    [id*="sticky-video" i],
+    [class*="pip-player" i],      [id*="pip-player" i],
+    [class*="video-float" i],     [class*="player-float" i],
+    [class*="minimized-player" i],[class*="docked-player" i],
+    .jw-flag-floating, .vjs-pip-container, .fluid_video_wrapper.fluid_pseudo_poster,
+    .connatix-floating, #connatix_player_floating,
+    .ex-co-floating, .exco-player-floating,
+    .vdo-ai-floating, .vidazoo-floating, .anyclip-floating,
+    .primis-floating, .taboola-floating, .outbrain-floating-player,
+    .stn-video-player-floating, .stn-player-sticky
+) {
+    display: none !important;
+}
+
+/* ---------------------------------------------------------------- *
+ * Sign-in and registration walls
+ *
+ * Only names that can only mean "wall": a bare .login-form or
+ * .signin-modal is how an actual sign-in page is built, and hiding one
+ * would lock the user out of the site.
+ *
+ * Paywalls are deliberately absent. See PAYWALL_RE in content/data.js.
+ * ---------------------------------------------------------------- */
+
+html:not(.nmc-off):not(.nmc-off-login) :is(
+    [class*="authwall" i],        [id*="authwall" i],
+    [class*="auth-wall" i],       [id*="auth-wall" i],
+    [class*="login-wall" i],      [id*="login-wall" i],
+    [class*="loginwall" i],       [id*="loginwall" i],
+    [class*="signin-wall" i],     [class*="sign-in-wall" i],
+    [class*="signup-wall" i],     [class*="sign-up-wall" i],
+    [class*="registration-wall" i],
+    [class*="regwall" i],         [id*="regwall" i],
+    [class*="reg-wall" i],        [id*="reg-wall" i],
+    [class*="unauth-wall" i],     [data-test-id="unauth-wall"],
+    [class*="gated-content" i],   [class*="content-gate" i],
+    .login-required-modal,
+    .authwall-join-form
+) {
+    display: none !important;
+}
+
+/* ---------------------------------------------------------------- *
+ * Sticky ad rails, interstitials and survey nags
+ * ---------------------------------------------------------------- */
+
+html:not(.nmc-off):not(.nmc-off-ads) :is(
+    [class*="ad-interstitial" i], [id*="ad-interstitial" i],
+    [class*="interstitial-ad" i], [id*="interstitial-ad" i],
+    [class*="sticky-ad" i],       [id*="sticky-ad" i],
+    [class*="anchor-ad" i],       [id*="anchor-ad" i],
+    [class*="footer-ad-sticky" i],
+    .adhesion-ad, .adhesive-ad, #adhesion, .ad-adhesion,
+    .gs-ad-sticky, .sticky-leaderboard, .persistent-ad,
+    #dismissible-sticky-ad, .pushdown-ad,
+    /* Google Vignette / anchor ads */
+    ins.adsbygoogle[data-anchor-status], .google-auto-placed[data-anchor-shown],
+    /* Survey / feedback intercepts */
+    #qualtrics-survey-modal, .QSIWebResponsive, [class*="QSI" i][class*="Popover" i],
+    .hotjar-survey, #_hj_feedback_container, .medallia-modal,
+    #foresee-alert-container, .fsrOverlay, .fsrInvite,
+    #usabilla_live_button_container, .usabilla-live-overlay
+) {
+    display: none !important;
+}

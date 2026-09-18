@@ -20,8 +20,17 @@
     },
 
     "content_scripts": [{
-        "js": [ "content.js" ],
-        "matches": [ "*://example.com/*" ]
+        "matches": [ "<all_urls>" ],
+        "css": [ "rules/cosmetic.css" ],
+        "js": [
+            "content/data.js",
+            "content/core.js",
+            "content/cmp.js",
+            "content/heuristics.js",
+            "content/main.js"
+        ],
+        "run_at": "document_start",
+        "all_frames": true
     }],
 
     "action": {
@@ -29,5 +38,35 @@
         "default_icon": "images/toolbar-icon.svg"
     },
 
-    "permissions": [ ]
+    "declarative_net_request": {
+        "rule_resources": [
+            {
+                "id": "consent",
+                "enabled": true,
+                "path": "rules/dnr-consent.json"
+            },
+            {
+                "id": "popups",
+                "enabled": true,
+                "path": "rules/dnr-popups.json"
+            },
+            {
+                "id": "ads",
+                "enabled": true,
+                "path": "rules/dnr-ads.json"
+            },
+            {
+                "id": "tracking",
+                "enabled": true,
+                "path": "rules/dnr-tracking.json"
+            }
+        ]
+    },
+
+    "permissions": [
+        "storage",
+        "declarativeNetRequest"
+    ],
+
+    "host_permissions": [ "<all_urls>" ]
 }
