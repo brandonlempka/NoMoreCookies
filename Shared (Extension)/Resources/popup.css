@@ -386,8 +386,82 @@ body.site-off .site-state {
     text-align: center;
 }
 
+.foot .linkish {
+    display: block;
+    margin: 6px auto 0;
+}
+
 body.off .card:not(.site),
 body.off #blocked-card {
     opacity: 0.45;
     pointer-events: none;
+}
+
+/* ------------------------------------------------------------ *
+ * Reports view
+ * ------------------------------------------------------------ */
+
+.spaced {
+    margin-top: 10px;
+}
+
+#report-other {
+    width: 100%;
+    margin-top: 4px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 12.5px;
+    resize: vertical;
+}
+
+#reports-card .disclosure {
+    cursor: default;
+}
+
+.report-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 0;
+    border-top: 1px solid var(--line);
+}
+
+.report-row:first-child {
+    border-top: 0;
+}
+
+.report-summary {
+    font-size: 12.5px;
+    line-height: 1.4;
+}
+
+.report-meta {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.report-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.fixed-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--pill);
+    color: var(--accent);
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.report-row.fixed {
+    opacity: 0.6;
 }

@@ -23,6 +23,7 @@
         </label>
     </header>
 
+    <main id="settings-view">
     <section class="card site" id="site-card">
         <div class="site-row">
             <div class="site-info">
@@ -144,6 +145,50 @@
 
     <footer class="foot">
         <span id="total">0 interruptions hidden on this page</span>
+        <button class="linkish inline" id="open-reports">Report this site / view reports</button>
     </footer>
+    </main>
+
+    <main id="reports-view" hidden>
+        <section class="card">
+            <button class="linkish" id="close-reports">‹ Back</button>
+        </section>
+
+        <section class="card">
+            <h2>Report this site</h2>
+            <div class="site-row">
+                <div class="site-info">
+                    <span class="site-host" id="report-host">this site</span>
+                </div>
+            </div>
+
+            <label class="row">
+                <span class="row-text">Still broken here</span>
+                <span class="switch">
+                    <input type="checkbox" id="report-still-broken">
+                    <span class="track" aria-hidden="true"></span>
+                </span>
+            </label>
+
+            <h2 class="spaced">Still visible</h2>
+            <div id="report-categories"></div>
+
+            <label class="row-text spaced">
+                Other
+                <textarea id="report-other" rows="2" placeholder="Anything else still showing…"></textarea>
+            </label>
+
+            <button class="linkish inline spaced" id="report-save">Save report</button>
+        </section>
+
+        <section class="card" id="reports-card">
+            <button class="disclosure" id="reports-head" aria-expanded="true" aria-controls="reports-list">
+                <span class="count-dot" id="reports-count">0</span>
+                <span class="disclosure-label" id="reports-label">No reports yet</span>
+            </button>
+            <button class="linkish" id="share-all" hidden>Share all</button>
+            <ul class="hidden-list" id="reports-list"></ul>
+        </section>
+    </main>
 </body>
 </html>

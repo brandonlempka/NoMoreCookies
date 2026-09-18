@@ -22,6 +22,8 @@ let settings = { ...DEFAULTS };
 let tab = null;
 let host = "";
 let netDirty = false;
+let reports = [];
+let reportCategoryChecks = {};
 
 /* ---------------------------------------------------------------- *
  * Loading
@@ -51,6 +53,50 @@ async function save(patch) {
     settings = { ...settings, ...patch };
     await api.storage.local.set(patch);
     await askContent({ type: "nmc:settingsChanged" });
+}
+
+/* ---------------------------------------------------------------- *
+ * Site reports
+ * ---------------------------------------------------------------- */
+
+async function loadReports() {
+    const stored = await api.storage.local.get("reports");
+    reports = Array.isArray(stored.reports) ? stored.reports : [];
+}
+
+async function saveReports() {
+    await api.storage.local.set({ reports });
+}
+
+function reportSummary(r) {
+    const bits = [];
+    if (r.stillBroken) bits.push("still broken");
+    if (r.categories.length) bits.push(`still visible: ${r.categories.map((c) => CATEGORY_LABELS[c] || c).join(", ")}`);
+    if (r.other) bits.push(`other: "${r.other}"`);
+    return bits.length ? bits.join("; ") : "(no details)";
+}
+
+function reportText(r) {
+    const date = new Date(r.createdAt).toLocaleDateString();
+    return `${r.host} — ${reportSummary(r)} (reported ${date})`;
+}
+
+async function shareText(title, text) {
+    if (navigator.share) {
+        try {
+            await navigator.share({ title, text });
+            return;
+        } catch {
+            /* user cancelled the share sheet, or it's unavailable here */
+            return;
+        }
+    }
+    try {
+        await navigator.clipboard.writeText(text);
+        window.alert("Sharing isn't available here — copied to the clipboard instead.");
+    } catch {
+        /* nothing more we can do */
+    }
 }
 
 /* ---------------------------------------------------------------- *
@@ -162,6 +208,91 @@ function renderToggles() {
     el("tagline").textContent = settings.enabled ? "Watching this page" : "Paused";
 }
 
+function renderReportForm() {
+    el("report-host").textContent = host || "this site";
+    el("report-still-broken").checked = false;
+    el("report-other").value = "";
+    reportCategoryChecks = {};
+
+    const box = el("report-categories");
+    box.textContent = "";
+    for (const [key, label] of Object.entries(CATEGORY_LABELS)) {
+        const row = document.createElement("label");
+        row.className = "row";
+
+        const text = document.createElement("span");
+        text.className = "row-text";
+        text.textContent = label;
+
+        const sw = document.createElement("span");
+        sw.className = "switch";
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.checked = false;
+        input.addEventListener("change", () => {
+            reportCategoryChecks[key] = input.checked;
+        });
+        const track = document.createElement("span");
+        track.className = "track";
+        track.setAttribute("aria-hidden", "true");
+        sw.append(input, track);
+
+        row.append(text, sw);
+        box.append(row);
+    }
+}
+
+function renderReportsList() {
+    const list = el("reports-list");
+    const n = reports.length;
+    const open = reports.filter((r) => !r.fixed);
+
+    el("reports-count").textContent = String(n);
+    el("reports-label").textContent = n === 0 ? "No reports yet" : n === 1 ? "1 report saved" : `${n} reports saved`;
+    el("share-all").hidden = open.length === 0;
+
+    list.textContent = "";
+    for (const r of [...reports].sort((a, b) => b.createdAt - a.createdAt)) {
+        const li = document.createElement("li");
+        li.className = "report-row" + (r.fixed ? " fixed" : "");
+
+        const meta = document.createElement("div");
+        meta.className = "report-meta";
+        meta.textContent = `${r.host} — ${new Date(r.createdAt).toLocaleDateString()}`;
+        if (r.fixed) {
+            const badge = document.createElement("span");
+            badge.className = "fixed-badge";
+            badge.textContent = "Fixed";
+            meta.append(" ", badge);
+        }
+
+        const summary = document.createElement("div");
+        summary.className = "report-summary";
+        summary.textContent = reportSummary(r);
+
+        const actions = document.createElement("div");
+        actions.className = "report-actions";
+
+        const shareBtn = document.createElement("button");
+        shareBtn.className = "undo";
+        shareBtn.textContent = "Share";
+        shareBtn.addEventListener("click", () => shareText("NoMoreCookies report", reportText(r)));
+
+        const fixBtn = document.createElement("button");
+        fixBtn.className = "undo";
+        fixBtn.textContent = r.fixed ? "Reopen" : "Mark fixed";
+        fixBtn.addEventListener("click", async () => {
+            r.fixed = !r.fixed;
+            await saveReports();
+            renderReportsList();
+        });
+
+        actions.append(shareBtn, fixBtn);
+        li.append(meta, summary, actions);
+        list.append(li);
+    }
+}
+
 async function refreshBlocked() {
     const state = await askContent({ type: "nmc:getState" });
     if (state) {
@@ -226,6 +357,47 @@ function wire() {
     el("restore-all").addEventListener("click", async () => {
         await askContent({ type: "nmc:restoreAll" });
         refreshBlocked();
+    });
+
+    el("open-reports").addEventListener("click", async () => {
+        await loadReports();
+        renderReportForm();
+        renderReportsList();
+        el("settings-view").hidden = true;
+        el("reports-view").hidden = false;
+    });
+
+    el("close-reports").addEventListener("click", () => {
+        el("reports-view").hidden = true;
+        el("settings-view").hidden = false;
+    });
+
+    el("report-save").addEventListener("click", async () => {
+        const categories = Object.keys(reportCategoryChecks).filter((k) => reportCategoryChecks[k]);
+        const stillBroken = el("report-still-broken").checked;
+        const other = el("report-other").value.trim();
+        if (!stillBroken && categories.length === 0 && !other) return;
+
+        reports.push({
+            id: crypto.randomUUID(),
+            host: normalizeHost(host) || host || "unknown site",
+            url: (tab && tab.url) || "",
+            stillBroken,
+            categories,
+            other,
+            createdAt: Date.now(),
+            fixed: false
+        });
+        await saveReports();
+        renderReportForm();
+        renderReportsList();
+    });
+
+    el("share-all").addEventListener("click", () => {
+        const open = reports.filter((r) => !r.fixed);
+        if (!open.length) return;
+        const text = ["NoMoreCookies — site reports", ...open.map(reportText)].join("\n");
+        shareText("NoMoreCookies — site reports", text);
     });
 
     el("reload").addEventListener("click", async () => {
