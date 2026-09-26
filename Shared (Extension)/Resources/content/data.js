@@ -337,6 +337,44 @@ window.NMC_DATA = (function () {
         "i"
     );
 
+    /* A sign-in the user asked for looks, to a keyword list, exactly like a
+       sign-in nag or an email-capture modal: an overlay with an email box
+       and "sign in" on it. These pieces let evaluate() tell them apart.
+
+       AUTH_FIELD_SEL: somewhere to put a credential. */
+    var AUTH_FIELD_SEL =
+        'input[type="password"], input[type="email"], input[type="tel"], input[autocomplete~="username"], input[autocomplete~="current-password"], input[autocomplete~="one-time-code"], input[autocomplete~="webauthn"], input[name*="email" i], input[name*="phone" i], input[name*="user" i], input[name*="login" i]';
+
+    /* Says it is a sign-in, as opposed to a newsletter's "sign up". */
+    var SIGNIN_RE = /\b(sign|log)[\s-]?(in|on)\b|\blogin\b/i;
+
+    /* Where that wording has to appear: the overlay's title or its submit
+       button, not a "log in" link in the small print. */
+    var SIGNIN_TITLE_SEL =
+        'h1, h2, h3, h4, [role="heading"], legend, button[type="submit"], input[type="submit"]';
+
+    /* Says it is standing between the reader and the page. This is the
+       login.strong list minus neutral headings like "log in or sign up",
+       which is also how an ordinary, requested sign-in dialog is titled. */
+    var LOGIN_GATE_RE = new RegExp(
+        [
+            "\\b(sign|log)\\s?-?(in|up)\\s+to\\s+(continue|see|view|read|keep|get)\\b",
+            "\\blogin\\s+to\\s+(continue|see|view|read)\\b",
+            "\\b(register|join)\\s+to\\s+(continue|see|view|read|keep)\\b",
+            "\\baccount\\s+to\\s+(continue|see|view|read)\\b",
+            "continue\\s+reading\\s+with\\s+a\\s+free\\s+account",
+            "you\\s+must\\s+be\\s+logged\\s+in",
+            "for\\s+the\\s+full\\s+experience"
+        ].join("|"),
+        "i"
+    );
+
+    /* The URL itself says the user is signing in: /login, ?auth=1,
+       #signin. Whole segments only, so LinkedIn's /authwall (a nag) does
+       not read as "auth". */
+    var AUTH_URL_RE =
+        /(^|[\/?&#=._-])(login|log-in|logon|signin|sign-in|signon|auth|oauth|sso|account|accounts|register|signup|sign-up)(?=$|[\/?&#=._-])/i;
+
     /* id / class fragments that suggest "this thing is an overlay". */
     var NAME_HINT_RE =
         /(^|[-_ ])(modal|popup|pop-up|overlay|interstitial|lightbox|dialog|takeover|slide-?in|flyout|drawer|toast|gate|curtain|veil|scrim|backdrop|banner|notice|consent|cookie|gdpr|ccpa|newsletter|subscribe|signup|sign-up|optin|opt-in|promo|offer|nag|prompt)([-_ ]|$)/i;
@@ -431,6 +469,11 @@ window.NMC_DATA = (function () {
         AD_SEL: AD_SEL,
         AD_WRAPPER_RE: AD_WRAPPER_RE,
         PAYWALL_RE: PAYWALL_RE,
+        AUTH_FIELD_SEL: AUTH_FIELD_SEL,
+        SIGNIN_RE: SIGNIN_RE,
+        SIGNIN_TITLE_SEL: SIGNIN_TITLE_SEL,
+        LOGIN_GATE_RE: LOGIN_GATE_RE,
+        AUTH_URL_RE: AUTH_URL_RE,
         CMP_FRAME_RE: CMP_FRAME_RE,
         VIDEO_FLOAT_NAME_RE: VIDEO_FLOAT_NAME_RE,
         GOOGLE_ONETAP_SEL: GOOGLE_ONETAP_SEL,

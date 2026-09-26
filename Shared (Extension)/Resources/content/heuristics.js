@@ -132,6 +132,60 @@
     var earlySeen = new WeakSet();
     var firstSweepDone = false;
 
+    /* When the user last clicked, tapped or pressed Enter/Space. Only
+       trusted events count, so our own synthetic clicks on close buttons
+       never register as the user asking for something. */
+    var lastGesture = 0;
+    var GESTURE_WINDOW_MS = 4000;
+
+    function noteGesture(e) {
+        if (!e.isTrusted) return;
+        if (e.type === "keydown" && e.key !== "Enter" && e.key !== " ") return;
+        lastGesture = Date.now();
+    }
+
+    ["pointerdown", "touchstart", "keydown"].forEach(function (type) {
+        try {
+            document.addEventListener(type, noteGesture, { passive: true, capture: true });
+        } catch (e) {
+            /* ignore */
+        }
+    });
+
+    /* A sign-in drawer the user opened and a sign-in nag are built the
+       same way, and one with an email box even reads like a newsletter
+       modal ("enter your email address…"). What separates them is intent:
+       the user just clicked something, or the URL is a sign-in URL
+       (Pizza Hut's "Sign in" lands on ?auth=1). Combined with an actual
+       credential field, sign-in wording, and nothing saying it is gating
+       the page, that is a sign-in the user wants, and it is left alone. */
+    function isRequestedSignIn(el, text) {
+        if (D.LOGIN_GATE_RE.test(text)) return false;
+
+        try {
+            if (!el.querySelector(D.AUTH_FIELD_SEL)) return false;
+        } catch (e) {
+            return false;
+        }
+
+        /* "Sign in" has to be what the thing is titled or what its submit
+           button does. Anywhere in the text is too loose: an email-capture
+           modal's "Already have an account? Log in" would pass. */
+        var titled = false;
+        try {
+            var labels = el.querySelectorAll(D.SIGNIN_TITLE_SEL);
+            for (var i = 0; i < labels.length && i < 20 && !titled; i++) {
+                titled = D.SIGNIN_RE.test(NMC.labelOf(labels[i]));
+            }
+        } catch (e) {
+            return false;
+        }
+        if (!titled) return false;
+
+        if (Date.now() - lastGesture < GESTURE_WINDOW_MS) return true;
+        return D.AUTH_URL_RE.test(location.pathname + location.search + location.hash);
+    }
+
     function alphaOf(color) {
         var m = /^rgba?\(([^)]+)\)$/.exec(color || "");
         if (!m) return 0;
@@ -263,6 +317,16 @@
            is out of scope, and this check sits ahead of every other signal so
            no amount of scoring can route around it. */
         if (D.PAYWALL_RE.test(text)) return null;
+
+        /* Likewise a sign-in the user asked for. Marked allowed rather than
+           just skipped: the gesture window closes, but the drawer stays
+           open, and the next sweep must not reach the opposite verdict.
+           The mark also covers its backdrop, which on its own would score
+           as an empty click blocker. */
+        if (isRequestedSignIn(el, text)) {
+            el.setAttribute("data-nmc-allow", "signin");
+            return null;
+        }
 
         var name = NMC.nameBlob(el);
         var hostFloatOk = VIDEO_HOST_RE.test(location.hostname);
