@@ -384,6 +384,21 @@ window.NMC_DATA = (function () {
     var CONTENT_GUARD_SEL =
         'main, article, [role="main"], [role="article"], #main-content, #primary, .site-content, .post-content, .entry-content';
 
+    /* Site navigation. A top bar is fixed, lifted, appears late on SPAs,
+       and routinely carries a mobile-only "Open in app" or "Log in" button
+       whose text reads as a strong nag keyword — italki's header scores as
+       an app banner on that alone. What a nag never has is several links to
+       different real places on the same site, so that is what identifies a
+       nav bar. NAV_LANDMARK_SEL / NAV_NAME_RE lower how many it takes. */
+    var NAV_LANDMARK_SEL = 'header, nav, [role="banner"], [role="navigation"], [role="menubar"]';
+
+    var NAV_NAME_RE = /\b(nav|navbar|navigation|header|topbar|top bar|menu|menubar|masthead)\b/i;
+
+    /* Links that don't count as "a place to go": the small print and the
+       sign-in/sign-up links every nag carries. Matched against the path. */
+    var NAV_EXEMPT_PATH_RE =
+        /(privacy|terms|cookie|legal|policy|policies|imprint|impressum|gdpr|ccpa|consent|login|log-in|signin|sign-in|signup|sign-up|register|password|unsubscribe|preferences)/i;
+
     /* Things that are never candidates, whatever they score. */
     var NEVER_SEL =
         "html, body, head, script, style, link, meta, title, noscript, template, svg, path, video, audio, canvas";
@@ -465,6 +480,9 @@ window.NMC_DATA = (function () {
         NAME_HINT_RE: NAME_HINT_RE,
         CONTENT_GUARD_SEL: CONTENT_GUARD_SEL,
         NEVER_SEL: NEVER_SEL,
+        NAV_LANDMARK_SEL: NAV_LANDMARK_SEL,
+        NAV_NAME_RE: NAV_NAME_RE,
+        NAV_EXEMPT_PATH_RE: NAV_EXEMPT_PATH_RE,
         VIDEO_SEL: VIDEO_SEL,
         AD_SEL: AD_SEL,
         AD_WRAPPER_RE: AD_WRAPPER_RE,

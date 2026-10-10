@@ -186,6 +186,63 @@
         return D.AUTH_URL_RE.test(location.pathname + location.search + location.hash);
     }
 
+    /* Registrable-ish domain: the last two labels, or three when the second
+       level is a short public suffix part (co.uk, com.au). Close enough to
+       tell teach.italki.com apart from apps.apple.com. */
+    function siteOf(host) {
+        var parts = (host || "").toLowerCase().split(".");
+        var n = parts.length >= 3 && parts[parts.length - 1].length === 2 && parts[parts.length - 2].length <= 3 ? 3 : 2;
+        return parts.slice(-n).join(".");
+    }
+
+    /* A site's own navigation: links to several distinct places on the same
+       site that aren't the small print or sign-in. A landmark (<header>,
+       <nav>, a "navbar" class) needs three; anything else needs five, which
+       still covers drawer menus without leaning on markup. */
+    function isSiteNav(el) {
+        var links;
+        try {
+            links = el.querySelectorAll("a[href]");
+        } catch (e) {
+            return false;
+        }
+        if (links.length < 3) return false;
+
+        var landmark = false;
+        try {
+            landmark = el.matches(D.NAV_LANDMARK_SEL) || !!el.querySelector(D.NAV_LANDMARK_SEL) ||
+                D.NAV_NAME_RE.test(NMC.normalizedName(el));
+        } catch (e) {
+            /* ignore */
+        }
+        var need = landmark ? 3 : 5;
+
+        var site = siteOf(location.hostname);
+        var here = location.pathname;
+        var seen = {};
+        var count = 0;
+
+        for (var i = 0; i < links.length && i < 200; i++) {
+            var u;
+            try {
+                u = new URL(links[i].getAttribute("href"), location.href);
+            } catch (e) {
+                continue;
+            }
+            if (u.protocol !== "http:" && u.protocol !== "https:") continue;
+            if (siteOf(u.hostname) !== site) continue;
+            if (D.NAV_EXEMPT_PATH_RE.test(u.pathname)) continue;
+
+            var key = u.hostname.replace(/^www\./, "") + u.pathname.replace(/\/+$/, "");
+            /* A "#section" link back to this page goes nowhere new. */
+            if (u.pathname === here && u.hash && !u.search) continue;
+            if (seen[key]) continue;
+            seen[key] = true;
+            if (++count >= need) return true;
+        }
+        return false;
+    }
+
     function alphaOf(color) {
         var m = /^rgba?\(([^)]+)\)$/.exec(color || "");
         if (!m) return 0;
@@ -327,6 +384,14 @@
             el.setAttribute("data-nmc-allow", "signin");
             return null;
         }
+
+        /* The site's own navigation bar, whatever keyword a mobile-only
+           "Open in app" button inside it lends it. Ahead of the special
+           cases too, so an ad slot docked in a fixed header can't take the
+           whole header down with it. Skipped rather than marked allowed:
+           the mark would also shield any real nag a fixed app shell
+           happens to be wrapping. */
+        if (isSiteNav(el)) return null;
 
         var name = NMC.nameBlob(el);
         var hostFloatOk = VIDEO_HOST_RE.test(location.hostname);
